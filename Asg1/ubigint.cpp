@@ -33,6 +33,8 @@ ubigint ubigint::operator+ (const ubigint& that) const {
   ubigint result;
   int len1 = this->ubig_value.size();
   int len2 = that.ubig_value.size();
+  cout << "len1 " <<len1<< '\n';
+  cout << "len2 " <<len2<< '\n';
   int sum = 0;
   int carry = 0;
   if(len1>len2){
@@ -150,11 +152,34 @@ ubigint ubigint::operator% (const ubigint& that) const {
 }
 
 bool ubigint::operator== (const ubigint& that) const {
-   return false;
+   if(this->ubig_value.size()==that.ubig_value.size()){
+     for(int i = 0;i<this->ubig_value.size();i++){
+       if(this->ubig_value.at(i)!=that.ubig_value.at(i)){
+         return false;
+       }
+     }
+     return true;
+   }else{
+     return false;
+   }
 }
 
 bool ubigint::operator< (const ubigint& that) const {
-   return false;
+  if(this->ubig_value.size()<that.ubig_value.size()){
+    return true;
+  }else if(this->ubig_value.size()>that.ubig_value.size()){
+    return false;
+  }else{
+    for(int i = this->ubig_value.size()-1;i>=0;i--){
+      if(this->ubig_value.at(i)>that.ubig_value.at(i)){
+        return false;
+      }
+      if(this->ubig_value.at(i)<that.ubig_value.at(i)){
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 ostream& operator<< (ostream& out, const ubigint& that) {
