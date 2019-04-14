@@ -43,20 +43,56 @@ ubigint ubigint::operator+ (const ubigint& that) const {
         carry = 1;
         sum -= 10;
       }
-      result.ubig_value.insert(result.ubig_value.begin(),sum);
+      result.ubig_value.push_back(sum);
     }
 
     for(int i = len2; i<len1; i++){
-      sum = this->ubig_value.at(i);
+      sum = this->ubig_value.at(i)+carry;
       carry = 0;
       if(sum>=10){
         carry = 1;
         sum -= 10;
       }
-      result.ubig_value.insert(result.ubig_value.begin(),sum);
+      result.ubig_value.push_back(sum);
     }
     if(carry>0){
-      result.ubig_value.insert(result.ubig_value.begin(),carry);
+      result.ubig_value.push_back(carry);
+    }
+  }else if(len1==len2){
+    for(int i = 0; i<len2;i++){
+      sum = this->ubig_value.at(i)+that.ubig_value.at(i)+carry;
+      carry = 0;
+      if(sum>=10){
+        carry = 1;
+        sum -= 10;
+      }
+      result.ubig_value.push_back(sum);
+    }
+    if(carry>0){
+      result.ubig_value.push_back(carry);
+    }
+  }else{
+    for(int i = 0; i<len1;i++){
+      sum = this->ubig_value.at(i)+that.ubig_value.at(i)+carry;
+      carry = 0;
+      if(sum>=10){
+        carry = 1;
+        sum -= 10;
+      }
+      result.ubig_value.push_back(sum);
+    }
+
+    for(int i = len1; i<len2; i++){
+      sum = that.ubig_value.at(i)+carry;
+      carry = 0;
+      if(sum>=10){
+        carry = 1;
+        sum -= 10;
+      }
+      result.ubig_value.push_back(sum);
+    }
+    if(carry>0){
+      result.ubig_value.push_back(carry);
     }
   }
 
