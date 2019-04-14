@@ -12,10 +12,10 @@ using namespace std;
 
 
 
-ubigint::ubigint (unsigned long that) {
-   DEBUGF ('~', this << " -> " << 0);
-
+ubigint::ubigint (unsigned long that):uvalue(that) {
+   DEBUGF ('~', this << " -> " << uvalue)
 }
+
 
 ubigint::ubigint (const string& that){
    DEBUGF ('~', "that = \"" << that << "\"");
@@ -103,11 +103,32 @@ ubigint ubigint::operator+ (const ubigint& that) const {
 
 ubigint ubigint::operator- (const ubigint& that) const {
    if (*this < that) throw domain_error ("ubigint::operator-(a<b)");
-
+   return ubigint (uvalue - that.uvalue);
 }
 
 ubigint ubigint::operator* (const ubigint& that) const {
+   ubigint result;
+   int len1 = this->ubig_value.size();
+   int len2 = that.ubig_value.size();
+   result.ubig_value.resize(len1+len2);
+   int c = 0;
+   int d = 0;
+   for(int i = 0; i<len1;i++){
+     c = 0;
+     for(int j=0; j<len2;j++){
+       d =result.ubig_value.at(i+j) +
+          this->ubig_value.at(i)*that.ubig_value.at(j)+ c;
+       result.ubig_value.at(i+j)=d%10;
+       c = d/10;
+     }
+    result.ubig_value.at(i+len2) = c;
+   }
+   while (result.ubig_value.size() > 0 and result.ubig_value.back() == 0){
+     result.ubig_value.pop_back();
+   }
 
+
+   return result;
 }
 
 void ubigint::multiply_by_2() {
@@ -180,6 +201,8 @@ bool ubigint::operator< (const ubigint& that) const {
     }
     return false;
   }
+  return uvalue < that.uvalue;
+
 }
 
 ostream& operator<< (ostream& out, const ubigint& that) {
@@ -188,4 +211,5 @@ ostream& operator<< (ostream& out, const ubigint& that) {
     output += that.ubig_value.at(i)+'0';
   }
   return out << output;
+  //return out << "ubigint(" << that.uvalue << ")";
 }
