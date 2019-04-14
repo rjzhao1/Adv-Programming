@@ -24,7 +24,7 @@ ubigint::ubigint (const string& that){
          throw invalid_argument ("ubigint::ubigint(" + that + ")");
       }
       int dig = digit - '0';
-      ubig_value.push_back(dig);
+      ubig_value.insert(ubig_value.begin(),dig);
    }
 
 }
@@ -36,32 +36,30 @@ ubigint ubigint::operator+ (const ubigint& that) const {
   int sum = 0;
   int carry = 0;
   if(len1>len2){
-    for(unsigned int i = 0; i<len2;i++){
+    for(int i = 0; i<len2;i++){
       sum = this->ubig_value.at(i)+that.ubig_value.at(i)+carry;
       carry = 0;
       if(sum>=10){
         carry = 1;
         sum -= 10;
       }
-      result.ubig_value.push_back(sum);
+      result.ubig_value.insert(result.ubig_value.begin(),sum);
     }
 
-    for(unsigned int i = len2; i < len1; i++){
-      sum = this->ubig_value.at(i)+carry;
+    for(int i = len2; i<len1; i++){
+      sum = this->ubig_value.at(i);
       carry = 0;
       if(sum>=10){
         carry = 1;
         sum -= 10;
       }
-      result.ubig_value.push_back(sum);
+      result.ubig_value.insert(result.ubig_value.begin(),sum);
     }
     if(carry>0){
-      result.ubig_value.push_back(carry);
+      result.ubig_value.insert(result.ubig_value.begin(),carry);
     }
   }
-  while (result.ubig_value.size() > 0 and result.ubig_value.back() == 0){
-    result.ubig_value.pop_back();
-  }
+
     return result;
 }
 
@@ -125,7 +123,7 @@ bool ubigint::operator< (const ubigint& that) const {
 
 ostream& operator<< (ostream& out, const ubigint& that) {
   string output;
-  for(unsigned int i = 0; i<that.ubig_value.size();i++){
+  for(int i = that.ubig_value.size()-1; i>=0;i--){
     output += that.ubig_value.at(i)+'0';
   }
   return out << output;
