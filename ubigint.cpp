@@ -106,38 +106,68 @@ ubigint ubigint::operator- (const ubigint& that) const {
    int len1 = this->ubig_value.size();
    int len2 = that.ubig_value.size();
    bool isCarry = false;
+   bool lastNumCarry = false;
    int nextNum;
-   cout << "length1 " << len1 << endl;
-   cout << "length2 " << len2 << endl;
    int num = this->ubig_value.at(0);
-   cout << "num " << num << endl;
    int difference = 0;
    int carry = 0;
-   for(int i = 0; i < len2; i++){
+   int furthestInd;
+
+   for(int i = 0; i < len1; i++){
       int num1 = this->ubig_value.at(i);
-      int num2 = that.ubig_value.at(i);
-      if(isCarry == false){
-        if(num1 > num2){
-          difference = num1 - num2;
-          cout << "diff " << difference << endl;
-        }else if (num1 < num2){
-          num1 += 10;
-          isCarry = true;
-          difference = num1 - num2;
-          cout << "diff " << difference << endl;
+      //int num2 = that.ubig_value.at(i);
+      if(i < len2){
+        int num2 = that.ubig_value.at(i);
+        if(isCarry == false){
+          if(num1 > num2){
+            difference = num1 - num2;
+            cout << "isCarry: " << isCarry << endl;
+            cout << "first: " << difference << endl;
+          }else if (num1 < num2){
+            num1 += 10;
+            isCarry = true;
+            difference = num1 - num2;
+
+            cout << "isCarry: " << isCarry << endl;
+            cout << "second: " << difference << endl;
+          }
+        }else{
+          int tempDiff = (num1-1) - num2;
+          if(num1 > num2 && tempDiff >= 0){
+            difference = (num1-1) - num2;
+            isCarry = false;
+
+            cout << "isCarry: " << isCarry << endl;
+            cout << "third: " << difference << endl;
+          }else{
+            num1 += 9;
+            isCarry = true;
+            difference = num1 - num2;
+
+            cout << "isCarry: " << isCarry << endl;
+            cout << "fourth: " << difference << endl;
+          }
         }
       }else{
-        if(num1 > num2){
-          difference = (num1-1) - num2;
-          cout << "diff " << difference << endl;
-          isCarry == false;
+        if(isCarry == true && num1 == 0){
+          difference = num1 += 9;
+          lastNumCarry = true;
+          cout << "isCarry: " << isCarry << endl;
+          cout << "1first: " << difference << endl;
+        }else if(isCarry == true && num1 >= 1){
+          cout << "isCarry: " << isCarry << endl;
+          isCarry = false;
+          num1 -= 1;
+          difference  = num1;
+          cout << "2second: " << difference << endl;
         }else{
-          num1 += 9;
-          isCarry = true;
-          difference = num1 - num2;
-          cout << "diff " << difference << endl;
+          difference = num1;
+          cout << "isCarry: " << isCarry << endl;
+          cout << "3third: " << difference << endl;
         }
       }
+
+      cout << endl;
       diffResult.ubig_value.push_back(difference);
 
    }
