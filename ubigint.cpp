@@ -182,6 +182,7 @@ void ubigint::divide_by_2() {
      nextNum = carryOver + currentNum;
 
      if(i == 0 && nextNum%2 != 0){
+       cout << "not divisible by 2" << endl;
      }else{
        if(nextNum > 2){
          solNum = nextNum/2;
@@ -191,6 +192,9 @@ void ubigint::divide_by_2() {
          }else{
            carryOver = 0;
          }
+       }else if(nextNum == 2){
+         result += '0' + 1;
+         carryOver = 0;
        }else{
          carryOver = 10;
        }
@@ -198,6 +202,10 @@ void ubigint::divide_by_2() {
    }
 
    intResult = atoi(result.c_str());
+   cout << "string result: " << result << endl;
+   for(int i = 0; i < result.length(); i++){
+     cout << result[i] << endl;
+   }
    cout << "intResult: " << intResult << endl;
 
 
