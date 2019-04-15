@@ -108,18 +108,17 @@ ubigint ubigint::operator- (const ubigint& that) const {
    bool isCarry = false;
    bool lastNumCarry = false;
    int nextNum;
-   int num = this->ubig_value.at(0);
    int difference = 0;
    int carry = 0;
+   int num = 0;
    int furthestInd;
-
    for(int i = 0; i < len1; i++){
       int num1 = this->ubig_value.at(i);
-      //int num2 = that.ubig_value.at(i);
       if(i < len2){
         int num2 = that.ubig_value.at(i);
         if(isCarry == false){
-          if(num1 > num2){
+          if(num1 >= num2){
+            difference = num1 - num2;
           }else if (num1 < num2){
             num1 += 10;
             isCarry = true;
@@ -149,9 +148,13 @@ ubigint ubigint::operator- (const ubigint& that) const {
         }
       }
 
-      cout << endl;
       diffResult.ubig_value.push_back(difference);
 
+   }
+   int length = diffResult.ubig_value.size();
+   int ele = diffResult.ubig_value.at(length-1);
+   if(length > 1 && ele == 0){
+     diffResult.ubig_value.pop_back();
    }
    return diffResult;
 
