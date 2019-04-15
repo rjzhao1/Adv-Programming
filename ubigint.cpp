@@ -169,7 +169,38 @@ void ubigint::multiply_by_2() {
 }
 
 void ubigint::divide_by_2() {
-   cout<<"hi"<<"\n";
+  cout<< "hi"<< endl;
+   int length = this->ubig_value.size();
+   string result = "";
+   int solNum = 0;
+   int carryOver = 0;
+   int nextNum = 0;
+   int intResult = 0;
+
+   for(int i = length-1; i >= 0; i--){
+     int currentNum = this->ubig_value.at(i);
+     nextNum = carryOver + currentNum;
+
+     if(i == 0 && nextNum%2 != 0){
+     }else{
+       if(nextNum > 2){
+         solNum = nextNum/2;
+         result += '0' + solNum;
+         if(nextNum%2 != 0){
+           carryOver = 10;
+         }else{
+           carryOver = 0;
+         }
+       }else{
+         carryOver = 10;
+       }
+     }
+   }
+
+   intResult = atoi(result.c_str());
+   cout << "intResult: " << intResult << endl;
+
+
 }
 
 
@@ -198,7 +229,9 @@ quo_rem udivide (const ubigint& dividend, const ubigint& divisor_) {
 }
 
 ubigint ubigint::operator/ (const ubigint& that) const {
-
+  ubigint that_ {that};
+  that_.divide_by_2();
+  return 0;
 }
 
 ubigint ubigint::operator% (const ubigint& that) const {
