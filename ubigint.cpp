@@ -120,50 +120,32 @@ ubigint ubigint::operator- (const ubigint& that) const {
         int num2 = that.ubig_value.at(i);
         if(isCarry == false){
           if(num1 > num2){
-            difference = num1 - num2;
-            cout << "isCarry: " << isCarry << endl;
-            cout << "first: " << difference << endl;
           }else if (num1 < num2){
             num1 += 10;
             isCarry = true;
             difference = num1 - num2;
-
-            cout << "isCarry: " << isCarry << endl;
-            cout << "second: " << difference << endl;
           }
         }else{
           int tempDiff = (num1-1) - num2;
           if(num1 > num2 && tempDiff >= 0){
             difference = (num1-1) - num2;
             isCarry = false;
-
-            cout << "isCarry: " << isCarry << endl;
-            cout << "third: " << difference << endl;
           }else{
             num1 += 9;
             isCarry = true;
             difference = num1 - num2;
-
-            cout << "isCarry: " << isCarry << endl;
-            cout << "fourth: " << difference << endl;
           }
         }
       }else{
         if(isCarry == true && num1 == 0){
           difference = num1 += 9;
           lastNumCarry = true;
-          cout << "isCarry: " << isCarry << endl;
-          cout << "1first: " << difference << endl;
         }else if(isCarry == true && num1 >= 1){
-          cout << "isCarry: " << isCarry << endl;
           isCarry = false;
           num1 -= 1;
           difference  = num1;
-          cout << "2second: " << difference << endl;
         }else{
           difference = num1;
-          cout << "isCarry: " << isCarry << endl;
-          cout << "3third: " << difference << endl;
         }
       }
 
