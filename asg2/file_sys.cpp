@@ -32,10 +32,13 @@ inode_state::inode_state() {
    root->contents->set_root(root,root);
  }
 
- void inode_state::set_prompt (string prompt){
+ void inode_state::set_prompt (const string& prompt){
    prompt_ = prompt;
  }
 
+ void inode_state::set_cwd (const inode_ptr& new_cwd){
+   cwd = new_cwd;
+ }
 const string& inode_state::prompt() const { return prompt_; }
 
 
@@ -143,13 +146,16 @@ inode_ptr directory::mkdir (const string& dirname) {
    DEBUGF ('i', dirname);
    inode dir_file = (file_type::DIRECTORY_TYPE);
    inode_ptr dir = make_shared<inode>(dir_file);
-   dir->get_contents()->get_dir().emplace(".",dir);
-   dir->get_contents()->get_dir().emplace("..",dirents.at("."));
+   dir->get_contents()->set_root(dir,dirents.at("."));
    dirents.emplace(dirname,dir);
-   for(auto it = dirents.begin();it != dirents.end(); ++it)
-   {
-       std::cout << it->first << " " << it->second << "\n";
-   }
+   // for(auto it = dirents.begin();it != dirents.end(); ++it)
+   // {
+   //     std::cout << it->first << " " << it->second << "\n";
+   // }
+   // for(auto it = (dir->get_contents()->get_dir().begin());it != (dir->get_contents()->get_dir().end()); ++it)
+   // {
+   //     std::cout << it->first << " " << it->second << "\n";
+   // }
    return dir;
 }
 

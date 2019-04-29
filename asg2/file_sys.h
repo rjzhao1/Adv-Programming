@@ -42,7 +42,8 @@ class inode_state {
       inode_state& operator= (const inode_state&) = delete; // op=
       inode_state();
       const string& prompt() const;
-      void set_prompt (string prompt);
+      void set_prompt (const string&);
+      void set_cwd (const inode_ptr&);
       inode_ptr get_cwd() const;
       inode_ptr get_root() const;
 };
@@ -160,7 +161,6 @@ class directory: public base_file {
       virtual map<string,inode_ptr> get_dir () override
       {return dirents;}
       virtual bool exist(const string&);
-
 };
 
 #endif

@@ -67,6 +67,23 @@ void fn_cat (inode_state& state, const wordvec& words){
 void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   inode_ptr cwd = state.get_cwd();
+   if(words.size()==1){
+     inode_ptr root = state.get_root();
+     state.set_cwd(root);
+   }else{
+     string dir_name = "";
+     for(unsigned int i = 1; i< words.size();++i){
+       dir_name+=words[i];
+     }
+     if(cwd->get_contents()->exist(dir_name)){
+       inode_ptr new_dir = cwd->get_contents()->get_dir().at(dir_name);
+       state.set_cwd(new_dir);
+     }else{
+       throw file_error("One or more files does not exist");
+     }
+   }
+
 }
 
 void fn_echo (inode_state& state, const wordvec& words){
@@ -125,12 +142,12 @@ void fn_mkdir (inode_state& state, const wordvec& words){
     string name;
     for(unsigned int i = 1; i <words.size();++i){
       name+=words[i];
-      name+=" ";
     }
     inode_ptr cwd = state.get_cwd();
-    if(cwd->get_contents()->exist(name)){
+    if(!cwd->get_contents()->exist(name)){
         cwd->get_contents()->mkdir(name);
       }
+
   }
 }
 
@@ -155,20 +172,22 @@ void fn_pwd (inode_state& state, const wordvec& words){
    inode_ptr cwd = state.get_cwd();
    inode_ptr prev =cwd->get_contents()->get_dir().at("..");
    string pwd = "";
-   while (prev!=state.get_root()) {
+   if(cwd==state.get_root()){
+     pwd.insert(0,"/");
+   }else{
+     while (cwd!=state.get_root()) {
      for(auto it = prev->get_contents()->get_dir().begin();
          it != prev->get_contents()->get_dir().end(); ++it){
            if(it->second==cwd){
              pwd.insert(0,it->first);
              pwd.insert(0,"/");
            }
-
+         }
+         cwd = prev;
+         prev =cwd->get_contents()->get_dir().at("..");
+       }
      }
-   }
-   if(prev==state.get_root()){
-     pwd.insert(0,"/");
-   }
-   cout << pwd << "\n";
+     cout << pwd << "\n";
 }
 
 void fn_rm (inode_state& state, const wordvec& words){
