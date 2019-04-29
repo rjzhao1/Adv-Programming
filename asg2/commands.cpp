@@ -96,7 +96,15 @@ void fn_echo (inode_state& state, const wordvec& words){
 void fn_exit (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   exit_status exit_stat;
+   if(words.size()==1||words[1]=="0"){
+     exit_stat.set(0);
+   }else{
+    int exit_num = atoi (words[1].c_str());
+    exit_stat.set(exit_num);
+   }
    throw ysh_exit();
+
 }
 
 void fn_ls (inode_state& state, const wordvec& words){
