@@ -102,6 +102,8 @@ class base_file {
       virtual map<string,inode_ptr> get_dir () = 0;
       virtual bool exist(const string&) = 0;
       virtual bool has_path(const wordvec&) = 0;
+      virtual bool is_dir() =0;
+
 
 
 };
@@ -129,6 +131,8 @@ class plain_file: public base_file {
       virtual map<string,inode_ptr> get_dir () override;
       virtual bool exist(const string&) override;
       virtual bool has_path(const wordvec&) override;
+      virtual bool is_dir() override;
+
 };
 
 // class directory -
@@ -165,6 +169,7 @@ class directory: public base_file {
       {return dirents;}
       virtual bool exist(const string&) override;
       virtual bool has_path(const wordvec&) override;
+      virtual bool is_dir() override;
 
 };
 

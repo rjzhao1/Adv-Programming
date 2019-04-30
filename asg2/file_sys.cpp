@@ -136,6 +136,7 @@ void directory::writefile (const wordvec&) {
 
 void directory::remove (const string& filename) {
    DEBUGF ('i', filename);
+   dirents.erase(filename);
 }
 
 base_file_ptr inode::get_contents(){
@@ -171,12 +172,19 @@ bool directory::exist(const string& name){
 }
 
 bool directory::has_path(const wordvec& path){
-  for(unsigned int i = 0;i < path.size()-1;i++){
-    if(dirents.find(path[i])==dirents.end()){
-      return false;
+  wordvec sub_path;
+
+  if(dirents.find(path[0])==dirents.end()){
+    return false;
+  }else if(path.size()>2){
+    for(unsigned int i = 1;i < path.size();i++){
+      sub_path.push_back(path[i]);
     }
+    inode_ptr next = dirents.at(path[0]);
+    return next->get_contents()->has_path(sub_path);
+  }else{
+    return true;
   }
-  return true;
 }
 
 bool plain_file::has_path(const wordvec&){
@@ -184,4 +192,12 @@ bool plain_file::has_path(const wordvec&){
 }
 bool plain_file::exist(const string&){
   throw file_error ("No maps in a plain file");
+}
+
+bool directory::is_dir(){
+  return true;
+}
+
+bool plain_file::is_dir(){
+  return false;
 }

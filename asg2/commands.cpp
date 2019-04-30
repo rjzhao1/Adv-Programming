@@ -172,6 +172,7 @@ void fn_mkdir (inode_state& state, const wordvec& words){
       name+=words[i];
     }
     inode_ptr cwd = state.get_cwd();
+    std::cout << path << '\n';
     if(path.size()>1 && cwd->get_contents()->has_path(path)){
       inode_ptr dir_loc = cwd;
       for(unsigned int i = 0; i < path.size()-1;i++){
@@ -238,24 +239,120 @@ void fn_rm (inode_state& state, const wordvec& words){
    if(words.size()<=1){
      throw command_error( "No Arguments" );
    }else{
-     string name;
-     wordvec path = split (words[1], "/");
-     for(unsigned int i = 1; i <words.size();++i){
+     string name = "";
+     for(unsigned int i = 1; i <words.size()-1;++i){
        name+=words[i];
+       name+="/";
      }
+     wordvec path = split (words[1], "/");
      inode_ptr cwd = state.get_cwd();
-     if(path->size()>1){
+     if(path.size()>1){
        if(cwd->get_contents()->has_path(path)){
+         inode_ptr dir_loc = cwd;
+         for(unsigned int i = 0; i < path.size()-1;i++){
+           dir_loc = dir_loc->get_contents()->get_dir().at(path[i]);
+         }
+         if(dir_loc->get_contents()->exist(path[path.size()-1])){
+          map<string,inode_ptr> sub_dir = dir_loc->get_contents()->get_dir();
+          for(auto it = sub_dir.begin();it!=sub_dir.end();++it){
+            if(it->first!="."&&it->first!=".."){
+              if(it->second->get_contents()->is_dir()){
+                if(it->second->get_contents()->size()>2){
+                  name+=it->first;
+                  name="rm/"+name;
+                  path = split (name, "/");
+                  fn_rm(state,path);
+                }
+              }
+            }
+          }
+          dir_loc->get_contents()->remove(path[path.size()-1]);
+         }else{
+           throw command_error("Directory already exist");
+         }
 
        }else{
          throw command_error( "No path found" );
        }
+     }else{
+       if(cwd->get_contents()->exist(path[0])){
+         map<string,inode_ptr> sub_dir = cwd->get_contents()->get_dir();
+         for(auto it = sub_dir.begin();it!=sub_dir.end();++it){
+           if(it->first!="."&&it->first!=".."){
+             if(it->second->get_contents()->is_dir()){
+               if(it->second->get_contents()->size()>2){
+                 name+=it->first;
+                 name="rm/"+name;
+                 path = split (name, "/");
+                 fn_rm(state,path);
+               }
+             }
+           }
+         }
+         cwd->get_contents()->remove(path[0]);
+       }
      }
-
    }
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   if(words.size()<=1){
+     throw command_error( "No Arguments" );
+   }else{
+     string name = "";
+     for(unsigned int i = 1; i <words.size()-1;++i){
+       name+=words[i];
+       name+="/";
+     }
+     wordvec path = split (words[1], "/");
+     inode_ptr cwd = state.get_cwd();
+     if(path.size()>1){
+       if(cwd->get_contents()->has_path(path)){
+         inode_ptr dir_loc = cwd;
+         for(unsigned int i = 0; i < path.size()-1;i++){
+           dir_loc = dir_loc->get_contents()->get_dir().at(path[i]);
+         }
+         if(dir_loc->get_contents()->exist(path[path.size()-1])){
+          map<string,inode_ptr> sub_dir = dir_loc->get_contents()->get_dir();
+          for(auto it = sub_dir.begin();it!=sub_dir.end();++it){
+            if(it->first!="."&&it->first!=".."){
+              if(it->second->get_contents()->is_dir()){
+                if(it->second->get_contents()->size()>2){
+                  name+=it->first;
+                  name="rm/"+name;
+                  path = split (name, "/");
+                  fn_rm(state,path);
+                }
+              }
+            }
+          }
+          dir_loc->get_contents()->remove(path[path.size()-1]);
+         }else{
+           throw command_error("Directory already exist");
+         }
+
+       }else{
+         throw command_error( "No path found" );
+       }
+     }else{
+       if(cwd->get_contents()->exist(path[0])){
+         map<string,inode_ptr> sub_dir = cwd->get_contents()->get_dir();
+         for(auto it = sub_dir.begin();it!=sub_dir.end();++it){
+           if(it->first!="."&&it->first!=".."){
+             if(it->second->get_contents()->is_dir()){
+               if(it->second->get_contents()->size()>2){
+                 name+=it->first;
+                 name="rm/"+name;
+                 path = split (name, "/");
+                 fn_rm(state,path);
+               }
+             }
+           }
+         }
+         cwd->get_contents()->remove(path[0]);
+       }
+     }
+   }
 }
