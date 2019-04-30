@@ -148,14 +148,10 @@ inode_ptr directory::mkdir (const string& dirname) {
    inode_ptr dir = make_shared<inode>(dir_file);
    dir->get_contents()->set_root(dir,dirents.at("."));
    dirents.emplace(dirname,dir);
-   // for(auto it = dirents.begin();it != dirents.end(); ++it)
-   // {
-   //     std::cout << it->first << " " << it->second << "\n";
-   // }
-   // for(auto it = (dir->get_contents()->get_dir().begin());it != (dir->get_contents()->get_dir().end()); ++it)
-   // {
-   //     std::cout << it->first << " " << it->second << "\n";
-   // }
+   for(auto it = dirents.begin();it != dirents.end(); ++it)
+   {
+       std::cout << it->first << " " << it->second << "\n";
+   }
    return dir;
 }
 
@@ -174,6 +170,18 @@ bool directory::exist(const string& name){
   return true;
 }
 
+bool directory::has_path(const wordvec& path){
+  for(unsigned int i = 0;i < path.size()-1;i++){
+    if(dirents.find(path[i])==dirents.end()){
+      return false;
+    }
+  }
+  return true;
+}
+
+bool plain_file::has_path(const wordvec&){
+  throw file_error ("No maps in a plain file");
+}
 bool plain_file::exist(const string&){
   throw file_error ("No maps in a plain file");
 }
