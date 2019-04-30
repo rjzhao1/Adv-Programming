@@ -2,6 +2,7 @@
 
 #include "commands.h"
 #include "debug.h"
+#include <cstdio>
 
 command_hash cmd_hash {
    {"cat"   , fn_cat   },
@@ -43,7 +44,7 @@ void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    if(words.size()<1){
-     throw command_error( "No Arguments" );
+     throw std::invalid_argument( "No Arguments" );
    }else{
      string contents="";
      inode_ptr cwd = state.get_cwd();
@@ -57,9 +58,8 @@ void fn_cat (inode_state& state, const wordvec& words){
             contents += " ";
           }
           cout <<contents<< "\n";
-          contents = "";
        }else{
-         throw command_error("One or more files does not exist");
+         throw file_error("One or more files does not exist");
        }
      }
    }
@@ -69,37 +69,19 @@ void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    inode_ptr cwd = state.get_cwd();
-   if(words.size()==1||words[1]=="/"){
+   if(words.size()==1){
      inode_ptr root = state.get_root();
      state.set_cwd(root);
    }else{
      string dir_name = "";
-     wordvec path = split (words[1], "/");
      for(unsigned int i = 1; i< words.size();++i){
        dir_name+=words[i];
      }
-     if(path.size()<=1){
-       if(cwd->get_contents()->exist(dir_name)){
-         inode_ptr new_dir =
-            cwd->get_contents()->get_dir().at(dir_name);
-         state.set_cwd(new_dir);
-       }else{
-         throw command_error("One or more files does not exist");
-       }
+     if(cwd->get_contents()->exist(dir_name)){
+       inode_ptr new_dir = cwd->get_contents()->get_dir().at(dir_name);
+       state.set_cwd(new_dir);
      }else{
-       if(cwd->get_contents()->has_path(path)){
-         inode_ptr dir_loc = cwd;
-         for(unsigned int i = 0; i < path.size()-1;i++){
-           dir_loc = dir_loc->get_contents()->get_dir().at(path[i]);
-         }
-         if(dir_loc->get_contents()->exist(path[path.size()-1])){
-           dir_loc =
-             dir_loc->get_contents()->get_dir().at(path[path.size()-1]);
-           state.set_cwd(dir_loc);
-         }else{
-           throw command_error("Directory does  exist");
-         }
-       }
+       throw file_error("One or more files does not exist");
      }
    }
 
@@ -129,6 +111,43 @@ void fn_exit (inode_state& state, const wordvec& words){
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   inode_ptr cwd = state.get_cwd();
+   if(words.size() > 1){
+     if(words[1] == "/"){
+       cwd = state.get_root();
+     }else{
+       if(!cwd->get_contents()->exist(words[1])){
+        throw file_error("One or more files does not exist");
+       }
+       cwd = cwd->get_contents()->get_dir().at(words[1]);
+     }
+   }
+   map<string,inode_ptr> dir =cwd->get_contents()->get_dir();
+   if(cwd==state.get_root()){
+     cout << "/:" << endl;
+   }else{
+     inode_ptr prev = cwd->get_contents()->get_dir().at("..");
+     map<string,inode_ptr> prev_dir =prev->get_contents()->get_dir();
+     string cwd_name = "";
+     for(auto it = prev_dir.begin();it!= prev_dir.end();++it){
+       if(it->second == cwd){
+         cwd_name+=it->first;
+       }
+     }
+     cout << "/" << cwd_name << ":" << endl;
+   }
+   for(auto it = (dir.begin()); it != (dir.end()); ++it){
+     printf("%d", it -> second -> get_inode_nr());
+     printf("%6s", "");
+     cout << it -> second -> get_contents() -> size();
+     printf("%2s", "");
+     if(it -> second -> get_contents() -> is_directory()
+        && it -> first != "." && it -> first != ".."){
+       cout << it -> first << "/" << endl;
+     }else{
+       cout << it -> first <<  endl;
+     }
+   }
 }
 
 void fn_lsr (inode_state& state, const wordvec& words){
@@ -140,7 +159,7 @@ void fn_make (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    if(words.size()<=1){
-     throw command_error( "No Arguments" );
+     throw std::invalid_argument( "No Arguments" );
    }else{
      string name = words[1];
      string contents = "";
@@ -164,33 +183,16 @@ void fn_mkdir (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
   if(words.size()<=1){
-    throw command_error( "No Arguments" );
+    throw std::invalid_argument( "No Arguments" );
   }else{
     string name;
-    wordvec path = split (words[1], "/");
     for(unsigned int i = 1; i <words.size();++i){
       name+=words[i];
     }
     inode_ptr cwd = state.get_cwd();
-    std::cout << path << '\n';
-    if(path.size()>1 && cwd->get_contents()->has_path(path)){
-      inode_ptr dir_loc = cwd;
-      for(unsigned int i = 0; i < path.size()-1;i++){
-        dir_loc = dir_loc->get_contents()->get_dir().at(path[i]);
-      }
-      if(!dir_loc->get_contents()->exist(path[path.size()-1])){
-        dir_loc->get_contents()->mkdir(path[path.size()-1]);
-      }else{
-        throw command_error("Directory already exist");
-      }
-    }else if(!cwd->get_contents()->exist(name)&&path.size()<=1){
+    if(!cwd->get_contents()->exist(name)){
         cwd->get_contents()->mkdir(name);
-      }else if(cwd->get_contents()->exist(name)){
-        throw command_error("Directory already exist");
-      }else{
-        throw command_error("No path found");
       }
-
   }
 }
 
@@ -198,7 +200,7 @@ void fn_prompt (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    if(words.size()<=1){
-     throw command_error( "No Arguments" );
+     throw std::invalid_argument( "No Arguments" );
    }else{
      string p;
      for(unsigned int i = 1; i <words.size();++i){
@@ -236,123 +238,9 @@ void fn_pwd (inode_state& state, const wordvec& words){
 void fn_rm (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   if(words.size()<=1){
-     throw command_error( "No Arguments" );
-   }else{
-     string name = "";
-     for(unsigned int i = 1; i <words.size()-1;++i){
-       name+=words[i];
-       name+="/";
-     }
-     wordvec path = split (words[1], "/");
-     inode_ptr cwd = state.get_cwd();
-     if(path.size()>1){
-       if(cwd->get_contents()->has_path(path)){
-         inode_ptr dir_loc = cwd;
-         for(unsigned int i = 0; i < path.size()-1;i++){
-           dir_loc = dir_loc->get_contents()->get_dir().at(path[i]);
-         }
-         if(dir_loc->get_contents()->exist(path[path.size()-1])){
-          map<string,inode_ptr> sub_dir = dir_loc->get_contents()->get_dir();
-          for(auto it = sub_dir.begin();it!=sub_dir.end();++it){
-            if(it->first!="."&&it->first!=".."){
-              if(it->second->get_contents()->is_dir()){
-                if(it->second->get_contents()->size()>2){
-                  name+=it->first;
-                  name="rm/"+name;
-                  path = split (name, "/");
-                  fn_rm(state,path);
-                }
-              }
-            }
-          }
-          dir_loc->get_contents()->remove(path[path.size()-1]);
-         }else{
-           throw command_error("Directory already exist");
-         }
-
-       }else{
-         throw command_error( "No path found" );
-       }
-     }else{
-       if(cwd->get_contents()->exist(path[0])){
-         map<string,inode_ptr> sub_dir = cwd->get_contents()->get_dir();
-         for(auto it = sub_dir.begin();it!=sub_dir.end();++it){
-           if(it->first!="."&&it->first!=".."){
-             if(it->second->get_contents()->is_dir()){
-               if(it->second->get_contents()->size()>2){
-                 name+=it->first;
-                 name="rm/"+name;
-                 path = split (name, "/");
-                 fn_rm(state,path);
-               }
-             }
-           }
-         }
-         cwd->get_contents()->remove(path[0]);
-       }
-     }
-   }
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   if(words.size()<=1){
-     throw command_error( "No Arguments" );
-   }else{
-     string name = "";
-     for(unsigned int i = 1; i <words.size()-1;++i){
-       name+=words[i];
-       name+="/";
-     }
-     wordvec path = split (words[1], "/");
-     inode_ptr cwd = state.get_cwd();
-     if(path.size()>1){
-       if(cwd->get_contents()->has_path(path)){
-         inode_ptr dir_loc = cwd;
-         for(unsigned int i = 0; i < path.size()-1;i++){
-           dir_loc = dir_loc->get_contents()->get_dir().at(path[i]);
-         }
-         if(dir_loc->get_contents()->exist(path[path.size()-1])){
-          map<string,inode_ptr> sub_dir = dir_loc->get_contents()->get_dir();
-          for(auto it = sub_dir.begin();it!=sub_dir.end();++it){
-            if(it->first!="."&&it->first!=".."){
-              if(it->second->get_contents()->is_dir()){
-                if(it->second->get_contents()->size()>2){
-                  name+=it->first;
-                  name="rm/"+name;
-                  path = split (name, "/");
-                  fn_rm(state,path);
-                }
-              }
-            }
-          }
-          dir_loc->get_contents()->remove(path[path.size()-1]);
-         }else{
-           throw command_error("Directory already exist");
-         }
-
-       }else{
-         throw command_error( "No path found" );
-       }
-     }else{
-       if(cwd->get_contents()->exist(path[0])){
-         map<string,inode_ptr> sub_dir = cwd->get_contents()->get_dir();
-         for(auto it = sub_dir.begin();it!=sub_dir.end();++it){
-           if(it->first!="."&&it->first!=".."){
-             if(it->second->get_contents()->is_dir()){
-               if(it->second->get_contents()->size()>2){
-                 name+=it->first;
-                 name="rm/"+name;
-                 path = split (name, "/");
-                 fn_rm(state,path);
-               }
-             }
-           }
-         }
-         cwd->get_contents()->remove(path[0]);
-       }
-     }
-   }
 }

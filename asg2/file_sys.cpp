@@ -81,10 +81,13 @@ file_error::file_error (const string& what):
 }
 
 size_t plain_file::size() const {
-   size_t size {0};
-   DEBUGF ('i', "size = " << size);
+   int size = 0;
+   for(unsigned int i = 0; i < data.size(); i++){
+     size += data[i].length();
+   }
    return size;
 }
+
 
 const wordvec& plain_file::readfile() const {
    DEBUGF ('i', data);
@@ -136,7 +139,6 @@ void directory::writefile (const wordvec&) {
 
 void directory::remove (const string& filename) {
    DEBUGF ('i', filename);
-   dirents.erase(filename);
 }
 
 base_file_ptr inode::get_contents(){
@@ -149,10 +151,15 @@ inode_ptr directory::mkdir (const string& dirname) {
    inode_ptr dir = make_shared<inode>(dir_file);
    dir->get_contents()->set_root(dir,dirents.at("."));
    dirents.emplace(dirname,dir);
-   for(auto it = dirents.begin();it != dirents.end(); ++it)
-   {
-       std::cout << it->first << " " << it->second << "\n";
-   }
+   // for(auto it = dirents.begin();it != dirents.end(); ++it)
+   // {
+   //     std::cout << it->first << " " << it->second << "\n";
+   // }
+   // for(auto it = (dir->get_contents()->get_dir().begin());it !=
+   // (dir->get_contents()->get_dir().end()); ++it)
+   // {
+   //     std::cout << it->first << " " << it->second << "\n";
+   // }
    return dir;
 }
 
@@ -161,6 +168,10 @@ inode_ptr directory::mkfile (const string& filename) {
    inode p_file = (file_type::PLAIN_TYPE);
    inode_ptr plain = make_shared<inode>(p_file);
    dirents.emplace(filename,plain);
+   for(auto it = dirents.begin();it != dirents.end(); ++it)
+   {
+       std::cout << it->first << " " << it->second << "\n";
+   }
    return plain;
 }
 
@@ -171,33 +182,14 @@ bool directory::exist(const string& name){
   return true;
 }
 
-bool directory::has_path(const wordvec& path){
-  wordvec sub_path;
-
-  if(dirents.find(path[0])==dirents.end()){
+bool plain_file::is_directory() {
     return false;
-  }else if(path.size()>2){
-    for(unsigned int i = 1;i < path.size();i++){
-      sub_path.push_back(path[i]);
-    }
-    inode_ptr next = dirents.at(path[0]);
-    return next->get_contents()->has_path(sub_path);
-  }else{
-    return true;
-  }
 }
 
-bool plain_file::has_path(const wordvec&){
-  throw file_error ("No maps in a plain file");
+bool directory::is_directory() {
+    return true;
 }
+
 bool plain_file::exist(const string&){
   throw file_error ("No maps in a plain file");
-}
-
-bool directory::is_dir(){
-  return true;
-}
-
-bool plain_file::is_dir(){
-  return false;
 }
