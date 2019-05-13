@@ -42,13 +42,15 @@ typename listmap<Key,Value,Less>::iterator
 listmap<Key,Value,Less>::insert (const value_type& pair) {
    DEBUGF ('l', &pair << "->" << pair);
    if(size==0){
+
      node* newNode = new node (nullptr,nullptr,pair);
      newNode->next= newNode->prev=newNode;
      head=tail=newNode;
      size++;
-   }else if(find(pair.first)==tail){
+   }else if(find(pair.first)!=tail||pair.first == tail->value.first){
+     iterator change_ele = find(pair.first);
+     change_ele->second = pair.second;
    }else{
-     std::cout << "hi" << '\n';
      node* newNode = new node (nullptr,nullptr,pair);
      node* temp = head;
     while(less((temp->value).first,pair.first) && temp!=tail){
@@ -74,8 +76,15 @@ listmap<Key,Value,Less>::insert (const value_type& pair) {
 template <typename Key, typename Value, class Less>
 typename listmap<Key,Value,Less>::iterator
 listmap<Key,Value,Less>::find(const key_type& that) {
+   node* it;
+
+   for(it = head; it != tail; it=it->next){
+     if(it->value.first==that){
+       return it;
+     }
+   }
+   return it;
    DEBUGF ('l', that);
-   return iterator();
 }
 
 //
