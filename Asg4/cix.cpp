@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
 using namespace std;
 
 #include <libgen.h>
@@ -23,6 +24,8 @@ unordered_map<string,cix_command> command_map {
    {"help", cix_command::HELP},
    {"ls"  , cix_command::LS  },
    {"get"  , cix_command::GET  },
+   {"put", cix_command::PUT},
+   {"rm",cix_command::RM},
 };
 
 static const char help[] = R"||(
@@ -63,18 +66,61 @@ void cix_get (client_socket& server,string filename) {
    copy(filename.begin(), filename.end(), header.filename);
    outlog << "sending header " << header << endl;
    send_packet (server, &header, sizeof header);
-   //recv_packet (server, &header, sizeof header);
-   //outlog << "received header " << header << endl;
-   // if (header.command != cix_command::LSOUT) {
-   //    outlog << "sent LS, server did not return LSOUT" << endl;
-   //    outlog << "server returned " << header << endl;
-   // }else {
-   //    auto buffer = make_unique<char[]> (header.nbytes + 1);
-   //    recv_packet (server, buffer.get(), header.nbytes);
-   //    outlog << "received " << header.nbytes << " bytes" << endl;
-   //    buffer[header.nbytes] = '\0';
-   //    cout << buffer.get();
-   // }
+   recv_packet (server, &header, sizeof header);
+   outlog << "received header " << header << endl;
+   if (header.command != cix_command::FILEOUT) {
+       outlog << "sent GET, server did not return FILEOUT" << endl;
+       outlog << "server returned " << header << endl;
+    }
+   else {
+        char* buffer = new char [header.nbytes + 1];
+        recv_packet (server, buffer, header.nbytes);
+        std::ofstream outfile (header.filename,std::ofstream::binary);
+        buffer[header.nbytes] = '\0';
+        outlog << "received " << header.nbytes << " bytes" << endl;
+        outfile.write(buffer,header.nbytes);
+        outfile.close();
+  }
+}
+
+void cix_put (client_socket& server,string filename) {
+   cix_header header;
+   header.command = cix_command::PUT;
+   copy(filename.begin(), filename.end(), header.filename);
+   ifstream is (header.filename, std::ifstream::binary);
+   if (is) {
+     // get length of file:
+     is.seekg (0, is.end);
+     int length = is.tellg();
+     is.seekg (0, is.beg);
+
+     char * buffer = new char [length];
+     // read data as a block:
+     is.read (buffer,length);
+     header.nbytes = length;
+     send_packet(server, &header, sizeof header);
+     send_packet(server,buffer,length);
+     is.close();
+   }else{
+     outlog <<filename << " file does not exist." << endl;
+   }
+   recv_packet (server, &header, sizeof header);
+    if (header.command != cix_command::ACK) {
+        outlog << "sent PUT, server did not return ACK" << endl;
+        outlog << "server returned " << header << endl;
+     }
+}
+
+void cix_rm(client_socket& server,string filename){
+  cix_header header;
+  header.command = cix_command::RM;
+  copy(filename.begin(), filename.end(), header.filename);
+  send_packet(server,&header,sizeof header);
+  recv_packet (server, &header, sizeof header);
+  if (header.command != cix_command::ACK) {
+      outlog << "sent PUT, server did not return ACK" << endl;
+      outlog << "server returned " << header << endl;
+   }
 }
 
 
@@ -123,6 +169,12 @@ int main (int argc, char** argv) {
                break;
             case cix_command::GET:
               cix_get(server,file_name);
+              break;
+            case cix_command::PUT:
+              cix_put(server,file_name);
+              break;
+            case cix_command::RM:
+              cix_rm(server,file_name);
               break;
             default:
                outlog << line << ": invalid command" << endl;
