@@ -123,7 +123,7 @@ shape_ptr interpreter::make_polygon (param begin, param end) {
      list.push_back({x, y});
    }
    DEBUGF ('f', range (begin, end));
-   return make_shared<polygon> (vertex_list());
+   return make_shared<polygon> (list);
 }
 
 shape_ptr interpreter::make_rectangle (param begin, param end) {

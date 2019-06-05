@@ -72,12 +72,25 @@ void polygon::draw (const vertex& center, const rgbcolor& color) const {
    vertex_list list = vertices;
    GLfloat x;
    GLfloat y;
+   GLfloat x_sum = 0.0;
+   GLfloat y_sum = 0.0;
+   GLfloat x_avg;
+   GLfloat y_avg;
+
+   for(unsigned int i = 0; i < vertices.size(); i++){
+     x_sum += list[i].xpos;
+     y_sum += list[i].ypos;
+   }
+
+   x_avg = x_sum/vertices.size();
+   y_avg = y_sum/vertices.size();
+
    glBegin(GL_POLYGON);
    glColor3ubv(color.ubvec);
 
-   for(int i = 0; i < vertices.size(); ++i){
-     x = (list[i].xpos/2 + center.xpos);
-     y = (list[i].ypos/2 + center.ypos);
+   for(unsigned int i = 0; i < vertices.size(); ++i){
+     x = (list[i].xpos - x_avg)/2 + center.xpos;
+     y = (list[i].ypos - y_avg)/2 + center.ypos;
      glVertex2f(x, y);
    }
    glEnd();
