@@ -44,6 +44,16 @@ square::square (GLfloat width): rectangle (width, width) {
    DEBUGF ('c', this);
 }
 
+triangle::triangle (const vertex_list& vertices_): polygon(vertices_) {
+   DEBUGF ('c', this);
+}
+
+diamond::diamond (GLfloat width, GLfloat height)
+   : polygon({  {height, 0}, {0, width},
+      {-height, 0}, {0, -width} }) {
+
+}
+
 void text::draw (const vertex& center, const rgbcolor& color) const {
    DEBUGF ('d', this << "(" << center << "," << color << ")");
    const GLubyte* words =

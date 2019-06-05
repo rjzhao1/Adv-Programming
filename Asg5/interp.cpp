@@ -27,6 +27,8 @@ interpreter::factory_map {
    {"polygon"  , &interpreter::make_polygon  },
    {"rectangle", &interpreter::make_rectangle},
    {"square"   , &interpreter::make_square   },
+   {"triangle" , &interpreter::make_triangle },
+   {"diamond"  , &interpreter::make_diamond },
 };
 
 interpreter::shape_map interpreter::objmap;
@@ -135,7 +137,31 @@ shape_ptr interpreter::make_rectangle (param begin, param end) {
 }
 
 shape_ptr interpreter::make_square (param begin, param end) {
-  GLfloat length = stof(*begin, 0);
+   GLfloat length = std::stof(*begin);
    DEBUGF ('f', range (begin, end));
    return make_shared<square> (length);
+}
+
+shape_ptr interpreter::make_triangle (param begin, param end) {
+
+   vertex_list list;
+   GLfloat x;
+   GLfloat y;
+   while(begin != end){
+     x = std::stof(*begin);
+     ++begin;
+     y = std::stof(*begin);
+     ++begin;
+     list.push_back({x, y});
+   }
+   DEBUGF ('f', range (begin, end));
+   return make_shared<triangle> (list);
+}
+
+shape_ptr interpreter::make_diamond (param begin, param end) {
+   GLfloat width = std::stof(*begin);
+   ++begin;
+   GLfloat height = std::stof(*begin);
+   DEBUGF ('f', range (begin, end));
+   return make_shared<diamond> (width, height);
 }
