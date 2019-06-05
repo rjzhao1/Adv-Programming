@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cmath>
 using namespace std;
 
 #include <GL/freeglut.h>
@@ -26,6 +27,9 @@ interpreter::factory_map {
    {"polygon"  , &interpreter::make_polygon  },
    {"rectangle", &interpreter::make_rectangle},
    {"square"   , &interpreter::make_square   },
+   {"triangle"   , &interpreter::make_triangle   },
+   {"equilateral", &interpreter::make_equilateral  },
+
 };
 
 interpreter::shape_map interpreter::objmap;
@@ -111,15 +115,60 @@ shape_ptr interpreter::make_circle (param begin, param end) {
 
 shape_ptr interpreter::make_polygon (param begin, param end) {
    DEBUGF ('f', range (begin, end));
-   return make_shared<polygon> (vertex_list());
+   vertex_list vertex;
+   while(begin!=end){
+     GLfloat xpos = std::stof (*begin);
+     ++begin;
+     GLfloat ypos = std::stof (*begin);
+     ++begin;
+     vertex.push_back({xpos,ypos});
+   }
+   return make_shared<polygon> (vertex);
 }
 
 shape_ptr interpreter::make_rectangle (param begin, param end) {
+   GLfloat x_length = std::stof(*begin)/2.0;
+   ++begin;
+   GLfloat y_length = std::stof(*begin)/2.0;
+   ++begin;
    DEBUGF ('f', range (begin, end));
-   return make_shared<rectangle> (GLfloat(), GLfloat());
+   return make_shared<rectangle> (x_length, y_length);
 }
 
 shape_ptr interpreter::make_square (param begin, param end) {
+  GLfloat length = stof(*begin)/2.0;
    DEBUGF ('f', range (begin, end));
-   return make_shared<square> (GLfloat());
+   return make_shared<square> (length);
+}
+
+shape_ptr interpreter::make_triangle (param begin, param end) {
+  auto temp = begin;
+  int length;
+  while (temp!=end) {
+    ++length;++temp;
+  }
+  if(length<6){
+    throw runtime_error ( "triangle: not enought arguments");
+  }
+  vertex_list vertex;
+  for(int i = 0; i<3;i++){
+    GLfloat xpos = std::stof (*begin);
+    ++begin;
+    GLfloat ypos = std::stof (*begin);
+    ++begin;
+    vertex.push_back({xpos,ypos});
+  }
+   DEBUGF ('f', range (begin, end));
+   return make_shared<triangle> (vertex);
+}
+shape_ptr interpreter::make_equilateral (param begin, param end) {
+   vertex_list vertex;
+   GLfloat length = std::stof(*begin);
+   GLfloat top_x = length/2.0;
+   GLfloat top_y = sqrt(length*length-(length/2)*(length/2));
+   vertex.push_back({0.0,0.0});
+   vertex.push_back({length,0.0});
+   vertex.push_back({top_x,top_y});
+   DEBUGF ('f', range (begin, end));
+   return make_shared<triangle> (vertex);
 }

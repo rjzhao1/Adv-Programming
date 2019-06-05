@@ -36,12 +36,17 @@ polygon::polygon (const vertex_list& vertices_): vertices(vertices_) {
    DEBUGF ('c', this);
 }
 
-rectangle::rectangle (GLfloat width, GLfloat height):
-            polygon({}) {
-   DEBUGF ('c', this << "(" << width << "," << height << ")");
+rectangle::rectangle (GLfloat width, GLfloat height)
+   : polygon({  {-width, height}, {width, height},
+      {width, -height}, {-width, -height} }) {
+
 }
 
 square::square (GLfloat width): rectangle (width, width) {
+   DEBUGF ('c', this);
+}
+
+triangle::triangle (const vertex_list& vertices_): polygon (vertices_) {
    DEBUGF ('c', this);
 }
 
@@ -69,6 +74,32 @@ void ellipse::draw (const vertex& center, const rgbcolor& color) const {
 }
 
 void polygon::draw (const vertex& center, const rgbcolor& color) const {
+
+   vertex_list list = vertices;
+   GLfloat x;
+   GLfloat y;
+   GLfloat x_sum = 0.0;
+   GLfloat y_sum = 0.0;
+   GLfloat x_avg;
+   GLfloat y_avg;
+
+   for(unsigned int i = 0; i < vertices.size(); i++){
+     x_sum += list[i].xpos;
+     y_sum += list[i].ypos;
+   }
+
+   x_avg = x_sum/vertices.size();
+   y_avg = y_sum/vertices.size();
+
+   glBegin(GL_POLYGON);
+   glColor3ubv(color.ubvec);
+
+   for(unsigned int i = 0; i < vertices.size(); ++i){
+     x = list[i].xpos - x_avg + center.xpos;
+     y = list[i].ypos - y_avg + center.ypos;
+     glVertex2f(x, y);
+   }
+   glEnd();
    DEBUGF ('d', this << "(" << center << "," << color << ")");
 }
 
