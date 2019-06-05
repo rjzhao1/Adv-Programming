@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <iostream>
 using namespace std;
 
 #include <GL/freeglut.h>
@@ -93,13 +94,14 @@ shape_ptr interpreter::make_text (param begin, param end) {
      ++begin;
    }
    return make_shared<text> (font->second, words);
-}
+ }
+
 
 shape_ptr interpreter::make_ellipse (param begin, param end) {
    DEBUGF ('f', range (begin, end));
-   GLfloat width = std::stof (*begin);
+   GLfloat width = stof(*begin, 0);
    ++begin;
-   GLfloat height = std::stof (*begin);
+   GLfloat height = stof(*begin, 0);
    return make_shared<ellipse> (width, height);
 }
 
@@ -110,16 +112,30 @@ shape_ptr interpreter::make_circle (param begin, param end) {
 }
 
 shape_ptr interpreter::make_polygon (param begin, param end) {
+   vertex_list list;
+   GLfloat x;
+   GLfloat y;
+   while(begin != end){
+     x = std::stof(*begin);
+     ++begin;
+     y = std::stof(*begin);
+     ++begin;
+     list.push_back({x, y});
+   }
    DEBUGF ('f', range (begin, end));
    return make_shared<polygon> (vertex_list());
 }
 
 shape_ptr interpreter::make_rectangle (param begin, param end) {
+   GLfloat x_length = std::stof(*begin);
+   ++begin;
+   GLfloat y_length = std::stof(*begin);
    DEBUGF ('f', range (begin, end));
-   return make_shared<rectangle> (GLfloat(), GLfloat());
+   return make_shared<rectangle> (x_length, y_length);
 }
 
 shape_ptr interpreter::make_square (param begin, param end) {
+  GLfloat length = stof(*begin, 0);
    DEBUGF ('f', range (begin, end));
-   return make_shared<square> (GLfloat());
+   return make_shared<square> (length);
 }

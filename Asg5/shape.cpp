@@ -1,5 +1,3 @@
-// $Id: shape.cpp,v 1.2 2019-02-28 15:24:20-08 - - $
-
 #include <typeinfo>
 #include <unordered_map>
 #include <cmath>
@@ -36,9 +34,10 @@ polygon::polygon (const vertex_list& vertices_): vertices(vertices_) {
    DEBUGF ('c', this);
 }
 
-rectangle::rectangle (GLfloat width, GLfloat height):
-            polygon({}) {
-   DEBUGF ('c', this << "(" << width << "," << height << ")");
+rectangle::rectangle (GLfloat width, GLfloat height)
+   : polygon({  {-width, height}, {width, height},
+      {width, -height}, {-width, -height} }) {
+
 }
 
 square::square (GLfloat width): rectangle (width, width) {
@@ -65,10 +64,23 @@ void ellipse::draw (const vertex& center, const rgbcolor& color) const {
       GLfloat ypos = dimension.ypos * sin (theta) + center.ypos;
       glVertex2f (xpos, ypos);
    }
-    glEnd();
+   glEnd();
 }
 
 void polygon::draw (const vertex& center, const rgbcolor& color) const {
+
+   vertex_list list = vertices;
+   GLfloat x;
+   GLfloat y;
+   glBegin(GL_POLYGON);
+   glColor3ubv(color.ubvec);
+
+   for(int i = 0; i < vertices.size(); ++i){
+     x = (list[i].xpos/2 + center.xpos);
+     y = (list[i].ypos/2 + center.ypos);
+     glVertex2f(x, y);
+   }
+   glEnd();
    DEBUGF ('d', this << "(" << center << "," << color << ")");
 }
 
